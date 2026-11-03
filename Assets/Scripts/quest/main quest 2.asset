@@ -12,9 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee68166fcd7347a43bdee3c503a9c74c, type: 3}
   m_Name: main quest 2
   m_EditorClassIdentifier: Assembly-CSharp::Quest
-  questID: 
-  questName: 
-  description: 
-  objectives: []
+  questID: mq2
+  questName: money in the bag!
+  description: Rob the convenience store, Hop-Mart
+  objectives:
+  - objectiveID: kill_enemy
+    description: Rob the convenience store, Hop-Mart
+    requiredAmount: 1
   rewardXP: 0
   rewardMoney: 0

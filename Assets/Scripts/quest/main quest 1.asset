@@ -12,9 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee68166fcd7347a43bdee3c503a9c74c, type: 3}
   m_Name: main quest 1
   m_EditorClassIdentifier: Assembly-CSharp::Quest
-  questID: 
-  questName: 
-  description: 
-  objectives: []
+  questID: mq1
+  questName: "Mog\u2019 em"
+  description: Rob 3 people
+  objectives:
+  - objectiveID: kill_enemy
+    description: Rob 3 people
+    requiredAmount: 3
   rewardXP: 0
   rewardMoney: 0

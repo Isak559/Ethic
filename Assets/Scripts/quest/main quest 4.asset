@@ -12,9 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee68166fcd7347a43bdee3c503a9c74c, type: 3}
   m_Name: main quest 4
   m_EditorClassIdentifier: Assembly-CSharp::Quest
-  questID: 
-  questName: 
-  description: 
-  objectives: []
+  questID: mq4
+  questName: Survival of the Fittest
+  description: 'deal with the conflict '
+  objectives:
+  - objectiveID: kill_enemy
+    description: deal with the conflict
+    requiredAmount: 1
   rewardXP: 0
   rewardMoney: 0

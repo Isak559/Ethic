@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Health : MonoBehaviour
 {
@@ -9,8 +10,9 @@ public class Health : MonoBehaviour
     private float _currentHealth;
     private bool isDead = false;
 
-    [SerializeField]
-    private FloatingHealthBar healthBar;
+    [Header("Health Bar References")]
+    [SerializeField] private FloatingHealthBar floatingHealthBar;
+    [SerializeField] private Slider playerHealthSlider;
 
     [Header("Quest Settings")]
     public bool countsAsEnemyForQuests = false;
@@ -76,12 +78,20 @@ public class Health : MonoBehaviour
 
     private void UpdateHealthBar()
     {
-        if (healthBar != null)
+        // Update enemy floating health bar
+        if (floatingHealthBar != null)
         {
-            healthBar.UpdateHealthBar(
+            floatingHealthBar.UpdateHealthBar(
                 _currentHealth,
                 maxHealth
             );
+        }
+
+        // Update player UI health bar
+        if (playerHealthSlider != null)
+        {
+            playerHealthSlider.maxValue = maxHealth;
+            playerHealthSlider.value = _currentHealth;
         }
     }
 

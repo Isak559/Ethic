@@ -13,38 +13,11 @@ MonoBehaviour:
   m_Name: New Quest
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   questID: 001
-  questName: Getting your feet wet
-  description: Eliminate 10 people to start getting your feet wet (with blood)
+  questName: Getting Started
+  description: Eliminate 10 people
   objectives:
-  - objectiveID: Kill enemie
-    description: Kill someone
-    requiredAmount: 1
-  - objectiveID: 
+  - objectiveID: kill_enemy
     description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
+    requiredAmount: 10
   rewardXP: 50
   rewardMoney: 500

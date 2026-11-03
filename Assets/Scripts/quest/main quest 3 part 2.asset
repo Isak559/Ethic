@@ -12,9 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee68166fcd7347a43bdee3c503a9c74c, type: 3}
   m_Name: main quest 3 part 2
   m_EditorClassIdentifier: Assembly-CSharp::Quest
-  questID: 
-  questName: 
-  description: 
-  objectives: []
+  questID: mq3,2
+  questName: Joined the Creed 2
+  description: Assassinate target 2
+  objectives:
+  - objectiveID: kill_enemy
+    description: Assassinate the targets
+    requiredAmount: 1
   rewardXP: 0
   rewardMoney: 0

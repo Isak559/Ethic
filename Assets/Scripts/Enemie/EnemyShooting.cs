@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System.Collections;
 
@@ -29,6 +28,15 @@ public class EnemyShooting : MonoBehaviour
 
     private void Start()
     {
+        if (player == null)
+        {
+            GameObject playerObject =
+                GameObject.FindGameObjectWithTag("Player");
+
+            if (playerObject != null)
+                player = playerObject.transform;
+        }
+
         if (bulletLine != null)
         {
             bulletLine.positionCount = 2;
@@ -42,7 +50,6 @@ public class EnemyShooting : MonoBehaviour
         if (player == null || firePoint == null)
             return;
 
-        // Check distance to player
         float distance = Vector3.Distance(
             transform.position,
             player.position
@@ -51,7 +58,6 @@ public class EnemyShooting : MonoBehaviour
         if (distance > shootingRange || fireRate <= 0f)
             return;
 
-        // Shoot at set intervals
         if (Time.time >= nextFireTime)
         {
             Shoot();
@@ -61,23 +67,15 @@ public class EnemyShooting : MonoBehaviour
 
     private void Shoot()
     {
-        // Direction towards player
         Vector3 direction =
             (player.position - firePoint.position).normalized;
 
-        // Decide if this shot is accurate
         bool accurateShot = Random.value < accuracy;
 
         if (!accurateShot)
         {
-            // Add random bullet spread
-            float randomX = Random.Range(
-                -missAngle, missAngle
-            );
-
-            float randomY = Random.Range(
-                -missAngle, missAngle
-            );
+            float randomX = Random.Range(-missAngle, missAngle);
+            float randomY = Random.Range(-missAngle, missAngle);
 
             direction = Quaternion.Euler(
                 randomX,
@@ -86,17 +84,12 @@ public class EnemyShooting : MonoBehaviour
             ) * direction;
         }
 
-        // Default bullet endpoint
         Vector3 endPoint =
             firePoint.position + direction * shootingRange;
 
-        // Play muzzle flash
         if (muzzleFlash != null)
-        {
             muzzleFlash.Play();
-        }
 
-        // Fire raycast
         if (Physics.Raycast(
             firePoint.position,
             direction,
@@ -105,7 +98,6 @@ public class EnemyShooting : MonoBehaviour
         {
             endPoint = hit.point;
 
-            // Check for player health
             Health health =
                 hit.collider.GetComponentInParent<Health>();
 
@@ -116,26 +108,18 @@ public class EnemyShooting : MonoBehaviour
             }
         }
 
-        // Draw bullet tracer
         if (bulletLine != null)
         {
             if (lineCoroutine != null)
-            {
                 StopCoroutine(lineCoroutine);
-            }
 
             lineCoroutine = StartCoroutine(
-                ShowBulletLine(
-                    firePoint.position,
-                    endPoint
-                )
+                ShowBulletLine(firePoint.position, endPoint)
             );
         }
     }
 
-    private IEnumerator ShowBulletLine(
-        Vector3 start,
-        Vector3 end)
+    private IEnumerator ShowBulletLine(Vector3 start, Vector3 end)
     {
         bulletLine.SetPosition(0, start);
         bulletLine.SetPosition(1, end);

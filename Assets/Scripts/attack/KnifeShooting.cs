@@ -11,9 +11,8 @@ public class KnifeShooting : MonoBehaviour
 
     [Header("References")]
     public Camera playerCamera;
-    public Animator knifeAnimator;
 
-    private float nextAttackTime;
+    private float nextAttackTime = 0f;
 
     private void Start()
     {
@@ -26,44 +25,55 @@ public class KnifeShooting : MonoBehaviour
         if (Mouse.current == null || playerCamera == null)
             return;
 
-        // Attack when left mouse button is pressed
         if (Mouse.current.leftButton.wasPressedThisFrame &&
             Time.time >= nextAttackTime)
         {
-            nextAttackTime = Time.time + attackRate;
             Attack();
         }
     }
 
     private void Attack()
     {
-        Debug.Log("Knife attack!");
+        nextAttackTime = Time.time + attackRate;
 
-        // Play knife attack animation
-        if (knifeAnimator != null)
-        {
-            knifeAnimator.SetTrigger("Attack");
-        }
-
-        // Raycast from the centre of the screen
-        Ray ray = playerCamera.ViewportPointToRay(
-            new Vector3(0.5f, 0.5f, 0f)
+        Ray ray = new Ray(
+            playerCamera.transform.position,
+            playerCamera.transform.forward
         );
 
         if (Physics.Raycast(ray, out RaycastHit hit, range))
         {
-            Debug.Log("Knife hit: " + hit.collider.name);
+            Debug.Log(
+                "KNIFE HIT: " + hit.collider.name +
+                " | Distance: " + hit.distance +
+                " | Range: " + range
+            );
 
-            // Find enemy health component
-            Health targetHealth =
+            Health enemyHealth =
                 hit.collider.GetComponentInParent<Health>();
 
-            if (targetHealth != null)
+            if (enemyHealth != null)
             {
-                targetHealth.TakeDamage(damage);
-
-                Debug.Log("Knife dealt " + damage + " damage!");
+                enemyHealth.TakeDamage(damage);
+                Debug.Log("KNIFE DAMAGE: " + damage);
             }
         }
+        else
+        {
+            Debug.Log("KNIFE MISSED! Range: " + range);
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (playerCamera == null)
+            return;
+
+        Gizmos.color = Color.red;
+
+        Gizmos.DrawRay(
+            playerCamera.transform.position,
+            playerCamera.transform.forward * range
+        );
     }
 }
