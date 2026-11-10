@@ -5,145 +5,204 @@ using System.Collections;
 
 public class Shooting : MonoBehaviour
 {
+    [Header("Shooting")]
     public float damage = 25f;
     public float range = 100f;
     public float fireRate = 0.25f;
 
+    [Header("Ammo")]
+    public int maxAmmo = 30;
+    private int currentAmmo;
+    public float reloadTime = 2f;
+    private bool isReloading = false;
+
+    [Header("References")]
     public Camera playerCamera;
     public Transform muzzlePoint;
     public GameObject impactEffect;
     public ParticleSystem muzzleParticles;
     public Light muzzleLight;
+    public AmmoCounter ammoCounter;
 
+    [Header("Recoil")]
     public Transform gunTransform;
     public float recoilDistance = 0.08f;
     public float recoilRotation = 5f;
     public float recoilReturnSpeed = 12f;
 
-    private float _nextFireTime;
-    private Vector3 _gunStartPosition;
-    private Quaternion _gunStartRotation;
-    private Coroutine _recoilCoroutine;
+    private float nextTimeToFire;
+    private Vector3 originalPosition;
+    private Quaternion originalRotation;
 
     private void Start()
     {
+        currentAmmo = maxAmmo;
+
         if (playerCamera == null)
             playerCamera = Camera.main;
 
         if (gunTransform != null)
         {
-            _gunStartPosition = gunTransform.localPosition;
-            _gunStartRotation = gunTransform.localRotation;
+            originalPosition = gunTransform.localPosition;
+            originalRotation = gunTransform.localRotation;
         }
 
-        if (muzzleLight != null)
-            muzzleLight.enabled = false;
+        UpdateAmmoUI();
     }
 
-
-private void Update()
-{
-    if (Mouse.current == null || playerCamera == null)
-        return;
-
-    // Keep firing while left mouse button is held
-    if (Mouse.current.leftButton.isPressed &&
-        Time.time >= _nextFireTime)
+    private void Update()
     {
-        _nextFireTime = Time.time + fireRate;
-        Shoot();
-    }
-}
+        if (isReloading)
+            return;
 
+        if (Keyboard.current != null &&
+            Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            StartCoroutine(Reload());
+            return;
+        }
+
+        if (currentAmmo <= 0)
+        {
+            StartCoroutine(Reload());
+            return;
+        }
+
+        if (Mouse.current != null &&
+            Mouse.current.leftButton.isPressed &&
+            Time.time >= nextTimeToFire)
+        {
+            nextTimeToFire = Time.time + fireRate;
+            Shoot();
+        }
+
+        ReturnRecoil();
+    }
 
     private void Shoot()
     {
-        // Muzzle flash particles
+        currentAmmo--;
+        UpdateAmmoUI();
+
         if (muzzleParticles != null)
             muzzleParticles.Play();
 
-        // Brief flash of light
         if (muzzleLight != null)
             StartCoroutine(MuzzleFlash());
 
-        // Gun recoil
-        if (gunTransform != null)
-        {
-            if (_recoilCoroutine != null)
-                StopCoroutine(_recoilCoroutine);
+        if (playerCamera == null)
+            return;
 
-            _recoilCoroutine = StartCoroutine(ApplyRecoil());
-        }
-
-        // Shoot towards the centre of the screen
         Ray ray = playerCamera.ViewportPointToRay(
             new Vector3(0.5f, 0.5f, 0f)
         );
 
         if (Physics.Raycast(ray, out RaycastHit hit, range))
         {
-            Debug.Log("Hit: " + hit.collider.name);
-
             Health targetHealth =
-                hit.collider.GetComponentInParent<Health>();
+                hit.transform.GetComponentInParent<Health>();
 
             if (targetHealth != null)
+            {
+                Debug.Log(
+                    "GUN DAMAGE: " + damage +
+                    " | Weapon: " + gameObject.name +
+                    " | Target: " + hit.collider.name +
+                    " | Distance: " + hit.distance
+                );
+
                 targetHealth.TakeDamage(damage);
+            }
 
             if (impactEffect != null)
             {
-                GameObject effect = Instantiate(
+                GameObject impact = Instantiate(
                     impactEffect,
                     hit.point,
                     Quaternion.LookRotation(hit.normal)
                 );
 
-                Destroy(effect, 2f);
+                Destroy(impact, 2f);
             }
         }
+
+        ApplyRecoil();
+    }
+
+    private IEnumerator Reload()
+    {
+        if (isReloading || currentAmmo == maxAmmo)
+            yield break;
+
+        isReloading = true;
+
+        yield return new WaitForSeconds(reloadTime);
+
+        currentAmmo = maxAmmo;
+        isReloading = false;
+
+        UpdateAmmoUI();
+    }
+
+    private void ApplyRecoil()
+    {
+        if (gunTransform == null)
+            return;
+
+        gunTransform.localPosition =
+            originalPosition - new Vector3(0f, 0f, recoilDistance);
+
+        gunTransform.localRotation =
+            originalRotation * Quaternion.Euler(-recoilRotation, 0f, 0f);
+    }
+
+    private void ReturnRecoil()
+    {
+        if (gunTransform == null)
+            return;
+
+        gunTransform.localPosition = Vector3.Lerp(
+            gunTransform.localPosition,
+            originalPosition,
+            Time.deltaTime * recoilReturnSpeed
+        );
+
+        gunTransform.localRotation = Quaternion.Lerp(
+            gunTransform.localRotation,
+            originalRotation,
+            Time.deltaTime * recoilReturnSpeed
+        );
     }
 
     private IEnumerator MuzzleFlash()
     {
         muzzleLight.enabled = true;
+
         yield return new WaitForSeconds(0.05f);
 
-        if (muzzleLight != null)
-            muzzleLight.enabled = false;
+        muzzleLight.enabled = false;
     }
 
-    private IEnumerator ApplyRecoil()
+    public void UpdateAmmoUI()
     {
-        gunTransform.localPosition =
-            _gunStartPosition - Vector3.forward * recoilDistance;
-
-        gunTransform.localRotation =
-            _gunStartRotation *
-            Quaternion.Euler(-recoilRotation, 0f, 0f);
-
-        while (Vector3.Distance(
-                   gunTransform.localPosition,
-                   _gunStartPosition) > 0.001f ||
-               Quaternion.Angle(
-                   gunTransform.localRotation,
-                   _gunStartRotation) > 0.1f)
+        if (ammoCounter != null)
         {
-            gunTransform.localPosition = Vector3.Lerp(
-                gunTransform.localPosition,
-                _gunStartPosition,
-                Time.deltaTime * recoilReturnSpeed
-            );
-
-            gunTransform.localRotation = Quaternion.Slerp(
-                gunTransform.localRotation,
-                _gunStartRotation,
-                Time.deltaTime * recoilReturnSpeed
-            );
-
-            yield return null;
+            ammoCounter.UpdateAmmo(currentAmmo, maxAmmo);
         }
+    }
 
-        gunTransform.localPosition = _gunStartPosition;
-        gunTransform.localRotation = _gunStartRotation;
+    public int GetCurrentAmmo()
+    {
+        return currentAmmo;
+    }
+
+    public int GetMaxAmmo()
+    {
+        return maxAmmo;
+    }
+
+    public bool IsReloading()
+    {
+        return isReloading;
     }
 }

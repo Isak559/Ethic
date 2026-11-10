@@ -18,33 +18,6 @@ MonoBehaviour:
   objectives:
   - objectiveID: Kill enemie
     description: Kill someone
-    requiredAmount: 1
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
-  - objectiveID: 
-    description: 
-    requiredAmount: 0
+    requiredAmount: 10
   rewardXP: 50
   rewardMoney: 500

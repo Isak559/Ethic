@@ -9,8 +9,9 @@ public class Health : MonoBehaviour
     private float _currentHealth;
     private bool isDead = false;
 
-    [SerializeField]
-    private FloatingHealthBar healthBar;
+    [Header("Health Bars")]
+    [SerializeField] private FloatingHealthBar healthBar;
+    [SerializeField] private PlayerHealthBar playerHealthBar;
 
     [Header("Quest Settings")]
     public bool countsAsEnemyForQuests = false;
@@ -18,17 +19,11 @@ public class Health : MonoBehaviour
     private void Start()
     {
         _currentHealth = maxHealth;
-
         UpdateHealthBar();
 
-        // Test dummy heals 100 health every 5 seconds
         if (gameObject.name == "test dummy")
         {
-            InvokeRepeating(
-                nameof(HealTestDummy),
-                5f,
-                5f
-            );
+            InvokeRepeating(nameof(HealTestDummy), 5f, 5f);
         }
     }
 
@@ -38,12 +33,7 @@ public class Health : MonoBehaviour
             return;
 
         _currentHealth -= damage;
-
-        _currentHealth = Mathf.Clamp(
-            _currentHealth,
-            0,
-            maxHealth
-        );
+        _currentHealth = Mathf.Clamp(_currentHealth, 0, maxHealth);
 
         UpdateHealthBar();
 
@@ -59,12 +49,7 @@ public class Health : MonoBehaviour
             return;
 
         _currentHealth += amount;
-
-        _currentHealth = Mathf.Clamp(
-            _currentHealth,
-            0,
-            maxHealth
-        );
+        _currentHealth = Mathf.Clamp(_currentHealth, 0, maxHealth);
 
         UpdateHealthBar();
     }
@@ -78,10 +63,12 @@ public class Health : MonoBehaviour
     {
         if (healthBar != null)
         {
-            healthBar.UpdateHealthBar(
-                _currentHealth,
-                maxHealth
-            );
+            healthBar.UpdateHealthBar(_currentHealth, maxHealth);
+        }
+
+        if (playerHealthBar != null)
+        {
+            playerHealthBar.UpdateHealthBar(_currentHealth, maxHealth);
         }
     }
 
@@ -94,14 +81,10 @@ public class Health : MonoBehaviour
 
         Debug.Log(gameObject.name + " died!");
 
-        // Register enemy kill for quests
         if (countsAsEnemyForQuests &&
             QuestManager.Instance != null)
         {
-            QuestManager.Instance.UpdateObjectiveByID(
-                "kill_enemy",
-                1
-            );
+            QuestManager.Instance.UpdateObjectiveByID("kill_enemy", 1);
         }
 
         Destroy(gameObject);

@@ -8,32 +8,31 @@ public class EnemyShooting : MonoBehaviour
     public Transform player;
     public Transform firePoint;
 
-    [Header("Shooting Settings")]
+    [Header("Shooting")]
     public float damage = 10f;
     public float fireRate = 1f;
     public float shootingRange = 20f;
 
-    [Header("Accuracy Settings")]
     [Range(0f, 1f)]
     public float accuracy = 1f / 6f;
 
     public float missAngle = 15f;
 
     [Header("Effects")]
-    public ParticleSystem muzzleFlash;
+    public GameObject muzzleFlash;
     public LineRenderer bulletLine;
     public float lineDuration = 0.1f;
 
     private float nextFireTime;
-    private Coroutine lineCoroutine;
 
     private void Start()
     {
-        if (bulletLine != null)
+        if (player == null)
         {
-            bulletLine.positionCount = 2;
-            bulletLine.useWorldSpace = true;
-            bulletLine.enabled = false;
+            GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+
+            if (playerObject != null)
+                player = playerObject.transform;
         }
     }
 
@@ -42,17 +41,12 @@ public class EnemyShooting : MonoBehaviour
         if (player == null || firePoint == null)
             return;
 
-        // Check distance to player
         float distance = Vector3.Distance(
             transform.position,
             player.position
         );
 
-        if (distance > shootingRange || fireRate <= 0f)
-            return;
-
-        // Shoot at set intervals
-        if (Time.time >= nextFireTime)
+        if (distance <= shootingRange && Time.time >= nextFireTime)
         {
             Shoot();
             nextFireTime = Time.time + 1f / fireRate;
@@ -61,90 +55,67 @@ public class EnemyShooting : MonoBehaviour
 
     private void Shoot()
     {
-        // Direction towards player
-        Vector3 direction =
-            (player.position - firePoint.position).normalized;
+        Vector3 direction = (player.position + Vector3.up * 0.8f
+            - firePoint.position).normalized;
 
-        // Decide if this shot is accurate
-        bool accurateShot = Random.value < accuracy;
-
-        if (!accurateShot)
+        if (Random.value > accuracy)
         {
-            // Add random bullet spread
-            float randomX = Random.Range(
-                -missAngle, missAngle
-            );
-
-            float randomY = Random.Range(
-                -missAngle, missAngle
-            );
-
             direction = Quaternion.Euler(
-                randomX,
-                randomY,
+                Random.Range(-missAngle, missAngle),
+                Random.Range(-missAngle, missAngle),
                 0f
             ) * direction;
         }
 
-        // Default bullet endpoint
-        Vector3 endPoint =
-            firePoint.position + direction * shootingRange;
-
-        // Play muzzle flash
         if (muzzleFlash != null)
-        {
-            muzzleFlash.Play();
-        }
+            muzzleFlash.SetActive(true);
 
-        // Fire raycast
+        RaycastHit hit;
+
         if (Physics.Raycast(
             firePoint.position,
             direction,
-            out RaycastHit hit,
+            out hit,
             shootingRange))
         {
-            endPoint = hit.point;
-
-            // Check for player health
-            Health health =
-                hit.collider.GetComponentInParent<Health>();
-
-            if (health != null &&
-                hit.transform.root == player.root)
+            if (hit.transform.root == player.root)
             {
-                health.TakeDamage(damage);
-            }
-        }
+                Health playerHealth =
+                    hit.transform.GetComponentInParent<Health>();
 
-        // Draw bullet tracer
-        if (bulletLine != null)
-        {
-            if (lineCoroutine != null)
-            {
-                StopCoroutine(lineCoroutine);
+                if (playerHealth != null)
+                    playerHealth.TakeDamage(damage);
             }
 
-            lineCoroutine = StartCoroutine(
-                ShowBulletLine(
+            if (bulletLine != null)
+            {
+                StartCoroutine(ShowBulletLine(
                     firePoint.position,
-                    endPoint
-                )
-            );
+                    hit.point
+                ));
+            }
         }
+
+        if (muzzleFlash != null)
+            StartCoroutine(DisableMuzzleFlash());
     }
 
-    private IEnumerator ShowBulletLine(
-        Vector3 start,
-        Vector3 end)
+    private IEnumerator ShowBulletLine(Vector3 start, Vector3 end)
     {
+        bulletLine.enabled = true;
         bulletLine.SetPosition(0, start);
         bulletLine.SetPosition(1, end);
-
-        bulletLine.enabled = true;
 
         yield return new WaitForSeconds(lineDuration);
 
         bulletLine.enabled = false;
-        lineCoroutine = null;
+    }
+
+    private IEnumerator DisableMuzzleFlash()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (muzzleFlash != null)
+            muzzleFlash.SetActive(false);
     }
 }

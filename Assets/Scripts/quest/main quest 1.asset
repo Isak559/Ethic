@@ -15,6 +15,9 @@ MonoBehaviour:
   questID: 
   questName: 
   description: 
-  objectives: []
+  objectives:
+  - objectiveID: kill_enemy
+    description: 
+    requiredAmount: 0
   rewardXP: 0
   rewardMoney: 0

@@ -7,38 +7,60 @@ public class QuestUI : MonoBehaviour
     public Transform questList;
     public QuestUIItem questPrefab;
 
+    private QuestManager questManager;
+
     private void Start()
     {
-        QuestManager.Instance.OnQuestsChanged += RefreshUI;
+        questManager = QuestManager.Instance;
+
+        if (questManager == null)
+        {
+            Debug.LogError("QuestManager not found!");
+            return;
+        }
+
+        if (questList == null || questPrefab == null)
+        {
+            Debug.LogError("Quest UI references are missing!");
+            return;
+        }
+
+        questManager.OnQuestsChanged += RefreshUI;
 
         RefreshUI();
     }
 
     private void OnDestroy()
     {
-        if (QuestManager.Instance != null)
+        if (questManager != null)
         {
-            QuestManager.Instance.OnQuestsChanged -= RefreshUI;
+            questManager.OnQuestsChanged -= RefreshUI;
         }
     }
 
     public void RefreshUI()
     {
-        // Remove old quest items
+        if (questManager == null ||
+            questList == null ||
+            questPrefab == null)
+            return;
+
         foreach (Transform child in questList)
         {
             Destroy(child.gameObject);
         }
 
-        // Create UI for active quests
-        foreach (Quest quest in QuestManager.Instance.activeQuests)
+        foreach (Quest quest in questManager.activeQuests)
         {
+            if (quest == null)
+                continue;
+
             QuestUIItem item = Instantiate(
                 questPrefab,
                 questList
             );
 
-            item.Setup(quest, QuestManager.Instance);
+            item.Setup(quest, questManager);
         }
     }
 }
