@@ -3,6 +3,11 @@ using UnityEngine;
 
 public class Health : MonoBehaviour
 {
+    [SerializeField] private AudioClip damageSoundClip;
+    [SerializeField] private float damageSoundCooldown = 0.5f;
+    private float nextDamageSoundTime = 0f;
+
+
     [Header("Health")]
     public float maxHealth = 100f;
 
@@ -38,6 +43,13 @@ public class Health : MonoBehaviour
             return;
 
         _currentHealth -= damage;
+
+        if (Time.time >= nextDamageSoundTime)
+    {
+        SoundFXmanager.instance.PlaySoundFXClip(damageSoundClip, transform, 1f);
+
+        nextDamageSoundTime = Time.time + damageSoundCooldown;
+    }
 
         _currentHealth = Mathf.Clamp(
             _currentHealth,

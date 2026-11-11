@@ -745,12 +745,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b982d9a547bbd8647a7517d23cbc4e47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
+  damageSoundClip: {fileID: 0}
+  damageSoundCooldown: 0.5
   maxHealth: 100
-  floatingHealthBar: {fileID: 0}
-  playerHealthBar: {fileID: 185810596}
-  healDelay: 3
-  healInterval: 1
-  healAmount: 100
+  healthBar: {fileID: 0}
+  countsAsEnemyForQuests: 0
 --- !u!114 &187200509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6361,12 +6360,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b982d9a547bbd8647a7517d23cbc4e47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
+  damageSoundClip: {fileID: 0}
+  damageSoundCooldown: 0.5
   maxHealth: 10000
-  floatingHealthBar: {fileID: 1031567518}
-  playerHealthBar: {fileID: 0}
-  healDelay: 3
-  healInterval: 1
-  healAmount: 100
+  healthBar: {fileID: 0}
+  countsAsEnemyForQuests: 0
 --- !u!136 &440687021
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -7493,12 +7491,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b982d9a547bbd8647a7517d23cbc4e47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
+  damageSoundClip: {fileID: 8300000, guid: 2e3a1cfb1f2a02940b8c08aa92ecd702, type: 3}
+  damageSoundCooldown: 0.5
   maxHealth: 200
-  floatingHealthBar: {fileID: 2075911004}
-  playerHealthBar: {fileID: 0}
-  healDelay: 3
-  healInterval: 1
-  healAmount: 100
+  healthBar: {fileID: 0}
+  countsAsEnemyForQuests: 0
 --- !u!114 &822129630
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33207,6 +33204,51 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!1 &1190583880
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1190583882}
+  - component: {fileID: 1190583883}
+  m_Layer: 0
+  m_Name: SoundFXmanager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1190583882
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1190583880}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 0.98172, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1190583883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1190583880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64ec9fda2aa15884394644ec1b2b0045, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoundFXmanager
+  soundFXObject: {fileID: 7390448843399255218, guid: 04a2ba77f9f5df54e8b475ba176f62ac, type: 3}
 --- !u!1 &1197971120
 GameObject:
   m_ObjectHideFlags: 0
@@ -43817,12 +43859,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b982d9a547bbd8647a7517d23cbc4e47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
+  damageSoundClip: {fileID: 8300000, guid: 2e3a1cfb1f2a02940b8c08aa92ecd702, type: 3}
+  damageSoundCooldown: 0.5
   maxHealth: 10000
-  floatingHealthBar: {fileID: 549104350}
-  playerHealthBar: {fileID: 0}
-  healDelay: 3
-  healInterval: 1
-  healAmount: 100
+  healthBar: {fileID: 0}
+  countsAsEnemyForQuests: 0
 --- !u!136 &1662250517
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -45650,6 +45691,7 @@ SceneRoots:
   m_Roots:
   - {fileID: 410087041}
   - {fileID: 832575519}
+  - {fileID: 1190583882}
   - {fileID: 187200505}
   - {fileID: 1011186965}
   - {fileID: 822129628}
