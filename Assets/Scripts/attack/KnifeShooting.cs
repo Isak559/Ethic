@@ -13,57 +13,87 @@ public class KnifeShooting : MonoBehaviour
     public Camera playerCamera;
     public Animator knifeAnimator;
 
-    private float nextAttackTime;
+    private float nextAttackTime = 0f;
 
     private void Start()
     {
         if (playerCamera == null)
+        {
             playerCamera = Camera.main;
+        }
     }
 
     private void Update()
     {
-        if (Mouse.current == null || playerCamera == null)
-            return;
-
-        // Attack when left mouse button is pressed
-        if (Mouse.current.leftButton.wasPressedThisFrame &&
-            Time.time >= nextAttackTime)
+        if (Mouse.current != null &&
+            Mouse.current.leftButton.wasPressedThisFrame)
         {
-            nextAttackTime = Time.time + attackRate;
-            Attack();
+            if (Time.time >= nextAttackTime)
+            {
+                Attack();
+            }
         }
     }
 
     private void Attack()
     {
-        Debug.Log("Knife attack!");
+        nextAttackTime = Time.time + attackRate;
 
-        // Play knife attack animation
         if (knifeAnimator != null)
         {
             knifeAnimator.SetTrigger("Attack");
         }
 
-        // Raycast from the centre of the screen
-        Ray ray = playerCamera.ViewportPointToRay(
-            new Vector3(0.5f, 0.5f, 0f)
+        if (playerCamera == null)
+        {
+            Debug.LogWarning("KnifeShooting: Player Camera is missing!");
+            return;
+        }
+
+        Ray ray = new Ray(
+            playerCamera.transform.position,
+            playerCamera.transform.forward
         );
 
         if (Physics.Raycast(ray, out RaycastHit hit, range))
         {
-            Debug.Log("Knife hit: " + hit.collider.name);
-
-            // Find enemy health component
             Health targetHealth =
                 hit.collider.GetComponentInParent<Health>();
 
             if (targetHealth != null)
             {
-                targetHealth.TakeDamage(damage);
+                Debug.Log(
+                    "KNIFE DAMAGE: " + damage +
+                    " | Target: " + hit.collider.name +
+                    " | Distance: " + hit.distance
+                );
 
-                Debug.Log("Knife dealt " + damage + " damage!");
+                targetHealth.TakeDamage(damage);
             }
+            else
+            {
+                Debug.Log(
+                    "KNIFE HIT: " + hit.collider.name +
+                    " | No Health component found"
+                );
+            }
+        }
+        else
+        {
+            Debug.Log("KNIFE MISSED");
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (playerCamera != null)
+        {
+            Gizmos.color = Color.red;
+
+            Gizmos.DrawRay(
+                playerCamera.transform.position,
+                playerCamera.transform.forward * range
+            );
         }
     }
 }

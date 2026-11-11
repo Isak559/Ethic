@@ -5,126 +5,171 @@ using System.Collections.Generic;
 
 public class WeaponManager : MonoBehaviour
 {
-    [Header("Weapon Setup")]
+    [Header("Weapon Settings")]
     public Transform weaponHolder;
     public GameObject startingWeapon;
+    public List<GameObject> unlockedWeapons = new List<GameObject>();
 
-    private List<GameObject> unlockedWeapons = new List<GameObject>();
+    [Header("UI")]
+    public AmmoCounter ammoCounter;
+
+    private List<GameObject> weaponInstances = new List<GameObject>();
 
     private GameObject currentWeapon;
     private int currentWeaponIndex = 0;
 
     private void Start()
     {
-        // Give the player their starting weapon
-        if (startingWeapon != null)
+        if (startingWeapon != null &&
+            !unlockedWeapons.Contains(startingWeapon))
         {
-            UnlockWeapon(startingWeapon);
+            unlockedWeapons.Insert(0, startingWeapon);
+        }
+
+        for (int i = 0; i < unlockedWeapons.Count; i++)
+        {
+            GameObject weapon = Instantiate(
+                unlockedWeapons[i],
+                weaponHolder
+            );
+
+            weapon.SetActive(false);
+            weaponInstances.Add(weapon);
+        }
+
+        if (weaponInstances.Count > 0)
+        {
+            EquipWeapon(0);
         }
     }
 
     private void Update()
     {
-        if (Keyboard.current == null)
-            return;
+        HandleWeaponSwitching();
+        UpdateAmmoUI();
+    }
 
-        // Number key weapon switching
-        if (Keyboard.current.digit1Key.wasPressedThisFrame)
-            EquipWeapon(0);
+    private void HandleWeaponSwitching()
+    {
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.digit1Key.wasPressedThisFrame)
+                EquipWeapon(0);
 
-        if (Keyboard.current.digit2Key.wasPressedThisFrame)
-            EquipWeapon(1);
+            if (Keyboard.current.digit2Key.wasPressedThisFrame)
+                EquipWeapon(1);
 
-        if (Keyboard.current.digit3Key.wasPressedThisFrame)
-            EquipWeapon(2);
+            if (Keyboard.current.digit3Key.wasPressedThisFrame)
+                EquipWeapon(2);
 
-        // Mouse scroll wheel weapon switching
+            // Also support the numpad keys.
+            if (Keyboard.current.numpad1Key.wasPressedThisFrame)
+                EquipWeapon(0);
+
+            if (Keyboard.current.numpad2Key.wasPressedThisFrame)
+                EquipWeapon(1);
+
+            if (Keyboard.current.numpad3Key.wasPressedThisFrame)
+                EquipWeapon(2);
+        }
+
         if (Mouse.current != null)
         {
             float scroll = Mouse.current.scroll.ReadValue().y;
 
-            if (scroll > 0)
-                SwitchWeapon(-1);
-
-            if (scroll < 0)
+            if (scroll > 0f)
                 SwitchWeapon(1);
+
+            if (scroll < 0f)
+                SwitchWeapon(-1);
+        }
+    }
+
+    private void SwitchWeapon(int direction)
+    {
+        if (weaponInstances.Count <= 1)
+            return;
+
+        int newIndex = currentWeaponIndex + direction;
+
+        if (newIndex >= weaponInstances.Count)
+            newIndex = 0;
+
+        if (newIndex < 0)
+            newIndex = weaponInstances.Count - 1;
+
+        EquipWeapon(newIndex);
+    }
+
+    private void EquipWeapon(int index)
+    {
+        if (index < 0 || index >= weaponInstances.Count)
+            return;
+
+        if (currentWeapon != null)
+            currentWeapon.SetActive(false);
+
+        currentWeaponIndex = index;
+        currentWeapon = weaponInstances[index];
+
+        currentWeapon.SetActive(true);
+
+        UpdateAmmoUI();
+    }
+
+    private void UpdateAmmoUI()
+    {
+        if (ammoCounter == null)
+            return;
+
+        if (currentWeapon == null)
+        {
+            ammoCounter.HideAmmo();
+            return;
+        }
+
+        Shooting shooting =
+            currentWeapon.GetComponentInChildren<Shooting>();
+
+        KnifeShooting knife =
+            currentWeapon.GetComponentInChildren<KnifeShooting>();
+
+        if (shooting != null)
+        {
+            shooting.ammoCounter = ammoCounter;
+            shooting.UpdateAmmoUI();
+        }
+        else if (knife != null)
+        {
+            ammoCounter.HideAmmo();
+        }
+        else
+        {
+            ammoCounter.HideAmmo();
         }
     }
 
     public void UnlockWeapon(GameObject weaponPrefab)
     {
-        if (weaponPrefab == null || weaponHolder == null)
+        if (weaponPrefab == null)
             return;
 
-        // Prevent duplicate weapons
-        foreach (GameObject weapon in unlockedWeapons)
-        {
-            if (weapon.name == weaponPrefab.name + "(Clone)")
-            {
-                Debug.Log("Weapon already unlocked!");
-                return;
-            }
-        }
+        if (unlockedWeapons.Contains(weaponPrefab))
+            return;
 
-        // Instantiate weapon under WeaponHolder
-        GameObject newWeapon = Instantiate(
+        unlockedWeapons.Add(weaponPrefab);
+
+        GameObject weapon = Instantiate(
             weaponPrefab,
             weaponHolder
         );
 
-        // Reset position and rotation
-        newWeapon.transform.localPosition = Vector3.zero;
-        newWeapon.transform.localRotation = Quaternion.identity;
-
-        // Preserve original prefab scale
-
-        // Disable weapon until equipped
-        newWeapon.SetActive(false);
-
-        // Add weapon to inventory
-        unlockedWeapons.Add(newWeapon);
-
-        Debug.Log("Unlocked weapon: " + weaponPrefab.name);
-
-        // Automatically equip new weapon
-        EquipWeapon(unlockedWeapons.Count - 1);
+        weapon.SetActive(false);
+        weaponInstances.Add(weapon);
     }
 
-    private void EquipWeapon(int index)
+    public GameObject GetCurrentWeapon()
     {
-        if (index < 0 || index >= unlockedWeapons.Count)
-            return;
-
-        // Hide previous weapon
-        if (currentWeapon != null)
-        {
-            currentWeapon.SetActive(false);
-        }
-
-        // Equip selected weapon
-        currentWeaponIndex = index;
-        currentWeapon = unlockedWeapons[index];
-
-        currentWeapon.SetActive(true);
-
-        Debug.Log("Equipped: " + currentWeapon.name);
-    }
-
-    private void SwitchWeapon(int direction)
-    {
-        if (unlockedWeapons.Count <= 1)
-            return;
-
-        int newIndex = currentWeaponIndex + direction;
-
-        // Wrap around to last weapon
-        if (newIndex < 0)
-            newIndex = unlockedWeapons.Count - 1;
-
-        // Wrap around to first weapon
-        if (newIndex >= unlockedWeapons.Count)
-            newIndex = 0;
-
-        EquipWeapon(newIndex);
+        return currentWeapon;
     }
 }
